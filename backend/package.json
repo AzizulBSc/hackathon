@@ -1,0 +1,23 @@
+{
+  "name": "smartsupport-backend",
+  "version": "1.0.0",
+  "description": "SmartSupport - Unified Customer Service Platform API",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "node --test src/__tests__/*.test.js"
+  },
+  "keywords": ["customer-support", "ticketing", "chatbot"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.5.0",
+    "body-parser": "^2.2.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^13.0.0"
+  }
+}

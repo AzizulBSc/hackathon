@@ -1,0 +1,24 @@
+{
+  "name": "smartsupport-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["customer-support", "ticketing", "chatbot"],
+  "author": "",
+  "license": "ISC",
+  "description": "SmartSupport - Unified Customer Service Platform Frontend",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.10.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "vite": "^7.2.6"
+  }
+}
