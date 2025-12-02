@@ -247,24 +247,39 @@ const addMessage = (req, res) => {
 // Get ticket statistics (for dashboard)
 const getStats = (req, res) => {
   try {
-    let baseQuery = 'FROM tickets WHERE 1=1';
+    let whereClause = '1=1';
     const params = [];
 
     if (req.user.role === 'customer') {
-      baseQuery += ' AND customer_id = ?';
+      whereClause += ' AND customer_id = ?';
       params.push(req.user.id);
     } else if (req.user.role === 'agent') {
-      baseQuery += ' AND (assigned_agent_id = ? OR assigned_agent_id IS NULL)';
+      whereClause += ' AND (assigned_agent_id = ? OR assigned_agent_id IS NULL)';
       params.push(req.user.id);
     }
 
+    // Use a single query with CASE statements to get all counts at once
+    const query = `
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open,
+        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+        SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved,
+        SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) as closed,
+        SUM(CASE WHEN priority = 'urgent' THEN 1 ELSE 0 END) as urgent
+      FROM tickets
+      WHERE ${whereClause}
+    `;
+
+    const result = db.prepare(query).get(...params);
+
     const stats = {
-      total: db.prepare(`SELECT COUNT(*) as count ${baseQuery}`).get(...params).count,
-      open: db.prepare(`SELECT COUNT(*) as count ${baseQuery} AND status = 'open'`).get(...params).count,
-      in_progress: db.prepare(`SELECT COUNT(*) as count ${baseQuery} AND status = 'in_progress'`).get(...params).count,
-      resolved: db.prepare(`SELECT COUNT(*) as count ${baseQuery} AND status = 'resolved'`).get(...params).count,
-      closed: db.prepare(`SELECT COUNT(*) as count ${baseQuery} AND status = 'closed'`).get(...params).count,
-      urgent: db.prepare(`SELECT COUNT(*) as count ${baseQuery} AND priority = 'urgent'`).get(...params).count
+      total: result.total || 0,
+      open: result.open || 0,
+      in_progress: result.in_progress || 0,
+      resolved: result.resolved || 0,
+      closed: result.closed || 0,
+      urgent: result.urgent || 0
     };
 
     res.json({ stats });

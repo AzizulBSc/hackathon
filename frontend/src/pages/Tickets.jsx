@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ticketService } from '../services/api';
@@ -16,7 +16,7 @@ const Tickets = () => {
     priority: 'medium',
   });
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       const params = { ...filters, page: pagination.page };
       const response = await ticketService.getAll(params);
@@ -27,11 +27,11 @@ const Tickets = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, pagination.page]);
 
   useEffect(() => {
     fetchTickets();
-  }, [filters, pagination.page]);
+  }, [fetchTickets]);
 
   const handleCreateTicket = async (e) => {
     e.preventDefault();

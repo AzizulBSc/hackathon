@@ -8,6 +8,9 @@ const ticketRoutes = require('./routes/ticketRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const userRoutes = require('./routes/userRoutes');
 
+// Import rate limiters
+const { apiLimiter, authLimiter, chatLimiter } = require('./middleware/rateLimiter');
+
 // Initialize database
 require('./database');
 
@@ -19,11 +22,11 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/tickets', ticketRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/users', userRoutes);
+// Apply rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/tickets', apiLimiter, ticketRoutes);
+app.use('/api/chat', chatLimiter, chatRoutes);
+app.use('/api/users', apiLimiter, userRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
