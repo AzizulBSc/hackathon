@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_active',
     ];
 
     /**
@@ -41,5 +43,38 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_active' => 'boolean',
     ];
+
+    // Relationships
+    public function createdTickets()
+    {
+        return $this->hasMany(Ticket::class, 'created_by');
+    }
+
+    public function assignedTickets()
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    // Role checks
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isAgent()
+    {
+        return $this->role === 'agent';
+    }
+
+    public function isCustomer()
+    {
+        return $this->role === 'customer';
+    }
 }

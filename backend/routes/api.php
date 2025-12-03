@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,48 +15,25 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-// Public API routes
+// Health check
 Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
-        'message' => 'API is running',
+        'message' => 'SmartSupport API is running',
         'timestamp' => now()->toDateTimeString(),
         'version' => 'Laravel ' . app()->version()
     ]);
 });
 
-// Example API routes
-Route::prefix('v1')->group(function () {
-    // Add your API routes here
-    Route::get('/test', function () {
-        return response()->json([
-            'message' => 'Hello from Laravel API',
-            'version' => '1.0',
-            'laravel' => app()->version()
-        ]);
-    });
-});
+// Authentication Routes (Public)
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-// Public API routes
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'message' => 'API is running',
-        'timestamp' => now()->toDateTimeString()
-    ]);
-});
-
-// Example API routes
-Route::prefix('v1')->group(function () {
-    // Add your API routes here
-    Route::get('/test', function () {
-        return response()->json([
-            'message' => 'Hello from Laravel API',
-            'version' => '1.0'
-        ]);
+// Protected Routes (Require Authentication)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
     });
 });

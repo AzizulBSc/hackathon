@@ -2,12 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [apiStatus, setApiStatus] = useState('Checking...');
   const [apiData, setApiData] = useState(null);
 
   useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+
+    if (token && user) {
+      const parsedUser = JSON.parse(user);
+      if (parsedUser.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else if (parsedUser.role === 'agent') {
+        router.push('/agent/dashboard');
+      } else {
+        router.push('/customer/dashboard');
+      }
+    }
+
     const checkAPI = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`);
@@ -21,7 +39,7 @@ export default function Home() {
     };
 
     checkAPI();
-  }, []);
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 font-sans p-8">
@@ -86,22 +104,18 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
+              href="/login"
               className="flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 text-white font-semibold transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg"
-              href="http://localhost:8000"
-              target="_blank"
-              rel="noopener noreferrer"
             >
-              Open Backend
-            </a>
-            <a
-              className="flex h-12 items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 px-6 font-semibold transition-all hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700"
-              href="https://nextjs.org/docs"
-              target="_blank"
-              rel="noopener noreferrer"
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="flex h-12 items-center justify-center rounded-lg border-2 border-blue-600 dark:border-blue-400 px-6 font-semibold transition-all hover:bg-blue-50 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400"
             >
-              Documentation
-            </a>
+              Create Account
+            </Link>
           </div>
         </div>
 
