@@ -37,17 +37,38 @@ export default function CustomerDashboard() {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Fetching tickets with token:', token ? 'Token exists' : 'No token');
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tickets`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
-        // Ensure we always set an array
-        setTickets(Array.isArray(data.data) ? data.data : []);
+        console.log('Raw API Response:', data);
+
+        // Handle Laravel pagination structure: response.data is paginated object with data array
+        let ticketsData = [];
+        if (data.data?.data) {
+          // Paginated response: data.data.data
+          ticketsData = Array.isArray(data.data.data) ? data.data.data : [];
+        } else if (data.data) {
+          // Direct array: data.data
+          ticketsData = Array.isArray(data.data) ? data.data : [];
+        } else if (Array.isArray(data)) {
+          // Direct array: data
+          ticketsData = data;
+        }
+
+        console.log('Parsed tickets:', ticketsData);
+        setTickets(ticketsData);
       } else {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
         setTickets([]);
       }
     } catch (error) {
