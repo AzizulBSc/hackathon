@@ -44,8 +44,18 @@ export default function AgentDashboard() {
         api.get('/tickets')
       ]);
 
-      setStats(statsRes.data || {});
-      setTickets(Array.isArray(ticketsRes.data?.data) ? ticketsRes.data.data : []);
+      console.log('Stats Response:', statsRes);
+      console.log('Tickets Response:', ticketsRes);
+
+      // Handle different response structures
+      const statsData = statsRes.data?.data || statsRes.data || {};
+      const ticketsData = ticketsRes.data?.data?.data || ticketsRes.data?.data || [];
+
+      console.log('Parsed Stats:', statsData);
+      console.log('Parsed Tickets:', ticketsData);
+
+      setStats(statsData);
+      setTickets(Array.isArray(ticketsData) ? ticketsData : []);
     } catch (error) {
       console.error('Error fetching data:', error);
       setTickets([]);
