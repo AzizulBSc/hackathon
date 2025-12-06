@@ -45,10 +45,14 @@ export default function CustomerDashboard() {
 
       if (response.ok) {
         const data = await response.json();
-        setTickets(data.data || []);
+        // Ensure we always set an array
+        setTickets(Array.isArray(data.data) ? data.data : []);
+      } else {
+        setTickets([]);
       }
     } catch (error) {
       console.error('Error fetching tickets:', error);
+      setTickets([]);
     } finally {
       setLoading(false);
     }
@@ -144,13 +148,13 @@ export default function CustomerDashboard() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-2">Open Tickets</h3>
             <p className="text-3xl font-bold text-yellow-600">
-              {tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length}
+              {Array.isArray(tickets) ? tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length : 0}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-2">Resolved</h3>
             <p className="text-3xl font-bold text-green-600">
-              {tickets.filter(t => t.status === 'resolved').length}
+              {Array.isArray(tickets) ? tickets.filter(t => t.status === 'resolved').length : 0}
             </p>
           </div>
         </div>

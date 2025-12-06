@@ -17,11 +17,15 @@ class ApiClient {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
 
+    // Get token from localStorage if available
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
     const config = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
     };
@@ -96,3 +100,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_URL);
+export default apiClient;

@@ -16,6 +16,7 @@ export default function Home() {
     const user = localStorage.getItem('user');
 
     if (token && user) {
+      console.log('User found', user);
       const parsedUser = JSON.parse(user);
       if (parsedUser.role === 'admin') {
         router.push('/admin/dashboard');

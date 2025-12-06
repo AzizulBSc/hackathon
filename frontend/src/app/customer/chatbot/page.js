@@ -59,7 +59,7 @@ export default function ChatbotPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ query: input })
+        body: JSON.stringify({ message: input })
       });
 
       if (response.ok) {
@@ -67,7 +67,7 @@ export default function ChatbotPage() {
         const botMessage = {
           id: Date.now() + 1,
           sender: 'bot',
-          message: data.response || 'I apologize, I couldn\'t process that request.',
+          message: data.message || 'I apologize, I couldn\'t process that request.',
           timestamp: new Date()
         };
         setMessages(prev => [...prev, botMessage]);
@@ -135,8 +135,8 @@ export default function ChatbotPage() {
               >
                 <div
                   className={`max-w-[70%] rounded-lg p-4 ${msg.sender === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                     }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.message}</p>
