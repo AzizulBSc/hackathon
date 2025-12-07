@@ -33,10 +33,16 @@ export default function AgentTicketDetail() {
   const fetchTicket = async () => {
     try {
       const response = await api.get(`/tickets/${params.id}`);
-      setTicket(response.data);
+      console.log('Ticket API Response:', response);
+
+      // Handle different response structures
+      const ticketData = response.data?.data || response.data;
+      console.log('Parsed Ticket Data:', ticketData);
+
+      setTicket(ticketData);
     } catch (err) {
       setError('Failed to load ticket');
-      console.error(err);
+      console.error('Fetch ticket error:', err);
     }
   };
 
@@ -207,10 +213,10 @@ export default function AgentTicketDetail() {
                     <div
                       key={message.id}
                       className={`p-4 rounded-lg ${message.is_internal
-                          ? 'bg-yellow-50 border border-yellow-200'
-                          : message.sender.role === 'customer'
-                            ? 'bg-gray-50'
-                            : 'bg-blue-50'
+                        ? 'bg-yellow-50 border border-yellow-200'
+                        : message.sender.role === 'customer'
+                          ? 'bg-gray-50'
+                          : 'bg-blue-50'
                         }`}
                     >
                       <div className="flex items-start justify-between mb-2">
