@@ -54,6 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/tickets/{id}', [TicketController::class, 'update']);
     Route::post('/tickets/{id}/reply', [TicketController::class, 'reply']);
 
+    // Users (Admin only - get agents list)
+    Route::get('/users/agents', [AuthController::class, 'getAgents']);
+
     // Chatbot
     Route::post('/chatbot/query', [ChatbotController::class, 'query']);
     Route::get('/chatbot/history', [ChatbotController::class, 'history']);

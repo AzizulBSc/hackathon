@@ -112,4 +112,28 @@ class AuthController extends Controller
             'user' => $request->user(),
         ], 200);
     }
+
+    /**
+     * Get all agents (Admin only)
+     */
+    public function getAgents(Request $request)
+    {
+        // Check if user is admin
+        if ($request->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $agents = \App\Models\User::where('role', 'agent')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $agents,
+        ], 200);
+    }
 }

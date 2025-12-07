@@ -49,11 +49,13 @@ export default function AdminTicketDetail() {
 
   const fetchAgents = async () => {
     try {
-      // This would fetch all agents - you may need to create this endpoint
-      // For now, we'll skip this or use a simple approach
-      setUsers([]);
+      const response = await api.get('/users/agents');
+      const agentsData = response.data?.data || response.data || [];
+      console.log('Agents:', agentsData);
+      setUsers(Array.isArray(agentsData) ? agentsData : []);
     } catch (err) {
       console.error('Failed to fetch agents:', err);
+      setUsers([]);
     }
   };
 
@@ -111,6 +113,25 @@ export default function AdminTicketDetail() {
       await fetchTicket();
     } catch (err) {
       setError('Failed to update priority');
+      console.error(err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAssignAgent = async (agentId) => {
+    setUpdating(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await api.patch(`/tickets/${params.id}`, {
+        assigned_to: agentId === 'unassign' ? null : parseInt(agentId)
+      });
+      setSuccess('Agent assigned successfully!');
+      await fetchTicket();
+    } catch (err) {
+      setError('Failed to assign agent');
       console.error(err);
     } finally {
       setUpdating(false);
@@ -239,10 +260,10 @@ export default function AdminTicketDetail() {
                     <div
                       key={message.id}
                       className={`p-4 rounded-lg ${message.is_internal
-                          ? 'bg-yellow-50 border border-yellow-200'
-                          : message.sender?.role === 'customer'
-                            ? 'bg-gray-50'
-                            : 'bg-blue-50'
+                        ? 'bg-yellow-50 border border-yellow-200'
+                        : message.sender?.role === 'customer'
+                          ? 'bg-gray-50'
+                          : 'bg-blue-50'
                         }`}
                     >
                       <div className="flex items-start justify-between mb-2">
@@ -391,6 +412,32 @@ export default function AdminTicketDetail() {
                 </div>
 
                 <div>
+                  <p className="text-sm text-gray-500 mb-2">Assign Agent</p>
+                  <Select
+                    value={ticket.assigned_to?.toString() || 'unassign'}
+                    onValueChange={handleAssignAgent}
+                    disabled={updating}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Agent" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassign">Unassigned</SelectItem>
+                      {users.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id.toString()}>
+                          {agent.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {ticket.agent && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Currently: {ticket.agent.name}
+                    </p>
+                  )}
+                </div>
+
+                <div>
                   <p className="text-sm text-gray-500">Created</p>
                   <p className="text-sm">{formatDate(ticket.created_at)}</p>
                 </div>
@@ -399,14 +446,6 @@ export default function AdminTicketDetail() {
                   <p className="text-sm text-gray-500">Last Updated</p>
                   <p className="text-sm">{formatDate(ticket.updated_at)}</p>
                 </div>
-
-                {ticket.agent && (
-                  <div>
-                    <p className="text-sm text-gray-500">Assigned Agent</p>
-                    <p className="text-sm font-medium">{ticket.agent.name}</p>
-                    <p className="text-xs text-gray-500">{ticket.agent.email}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
