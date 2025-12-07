@@ -94,33 +94,73 @@ class ChatbotController extends Controller
     }
 
     /**
-     * Get AI response (using Hugging Face or fallback)
+     * Get AI response (using Groq API or fallback)
+     * Free AI API: https://console.groq.com
      */
     private function getAIResponse($message)
     {
         // Check if API key is configured
-        $apiKey = env('HUGGINGFACE_API_KEY');
+        $apiKey = env('GROQ_API_KEY') ?? env('HUGGINGFACE_API_KEY');
 
         if (!$apiKey) {
             return $this->getSmartFallback($message);
         }
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(30)->post('https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1', [
-                'inputs' => "You are a helpful customer support assistant. Answer this question concisely: {$message}",
-                'parameters' => [
-                    'max_new_tokens' => 200,
+            // Try Groq API first (free and fast)
+            if (env('GROQ_API_KEY')) {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ])->timeout(30)->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => 'llama-3.3-70b-versatile', // Fast and capable free model
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a helpful customer support assistant. Provide concise, friendly, and accurate responses to customer queries.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $message
+                        ]
+                    ],
+                    'max_tokens' => 300,
                     'temperature' => 0.7,
-                ],
-            ]);
+                ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data[0]['generated_text'])) {
-                    return trim($data[0]['generated_text']);
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if (isset($data['choices'][0]['message']['content'])) {
+                        return trim($data['choices'][0]['message']['content']);
+                    }
+                }
+            }
+
+            // Fallback to OpenRouter (also free tier available)
+            if (env('OPENROUTER_API_KEY')) {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('OPENROUTER_API_KEY'),
+                    'Content-Type' => 'application/json',
+                    'HTTP-Referer' => env('APP_URL', 'http://localhost'),
+                ])->timeout(30)->post('https://openrouter.ai/api/v1/chat/completions', [
+                    'model' => 'meta-llama/llama-3.2-3b-instruct:free',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a helpful customer support assistant. Provide concise, friendly, and accurate responses.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $message
+                        ]
+                    ],
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if (isset($data['choices'][0]['message']['content'])) {
+                        return trim($data['choices'][0]['message']['content']);
+                    }
                 }
             }
         } catch (\Exception $e) {
