@@ -89,6 +89,21 @@ class ApiClient {
   }
 
   /**
+   * PATCH request
+   * @param {string} endpoint - API endpoint
+   * @param {object} body - Request body
+   * @param {object} options - Fetch options
+   * @returns {Promise<object>} API response
+   */
+  async patch(endpoint, body = null, options = {}) {
+    return this.request(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  /**
    * DELETE request
    * @param {string} endpoint - API endpoint
    * @param {object} options - Fetch options
